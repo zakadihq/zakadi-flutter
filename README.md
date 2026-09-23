@@ -23,6 +23,12 @@ flutter config --enable-swift-package-manager
 
 `flutter config` applies to every Flutter project on the machine, so run the last line even when the build fails.
 
+The CocoaPods build also rewrites four tracked files of the example (`ios/Flutter/Debug.xcconfig`, `ios/Flutter/Release.xcconfig`, `ios/Runner.xcodeproj/project.pbxproj` and `ios/Runner.xcworkspace/contents.xcworkspacedata`) and adds `ios/Podfile`, `ios/Podfile.lock` and `ios/Pods/`. They must never be committed, and while they are in place every Swift Package Manager build of the example fails on Xcode 27 with the same iOS 13.0 error. So restore the example after every CocoaPods build, failed or not, from `packages/zakadi_sdk/example` (`-x` removes ignored files under `ios/` too, `ios/Pods/` among them):
+
+```sh
+git checkout -- ios && git clean -fdx ios
+```
+
 ## Licence
 
 Zakadi SDKs and client libraries are open source under the Apache License 2.0 (see `LICENSE`; the `NOTICE` file reserves the Zakadi trademarks). They are clients for the Zakadi service, which is proprietary; using it requires an account and acceptance of the Zakadi Terms of Service. Zakadi and the Zakadi logo are trademarks and are not covered by the Apache licence.
