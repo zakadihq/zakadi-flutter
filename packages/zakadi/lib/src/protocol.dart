@@ -72,7 +72,12 @@ enum ZakadiTerminalState {
 
   /// Whether the SDK offers a redial action in this state.
   bool get offersRedial => switch (this) {
-        incomplete || disconnected || networkFloor || error || interrupted => true,
+        incomplete ||
+        disconnected ||
+        networkFloor ||
+        error ||
+        interrupted =>
+          true,
         _ => false,
       };
 }

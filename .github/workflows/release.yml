@@ -1,0 +1,46 @@
+# Zakadi repository standard: release.yml for pub.dev (published by hand, D61).
+# The tag verifies the package, runs the publish dry run and drafts the GitHub release
+# with the changelog section; a maintainer then runs "dart pub publish". Packages that
+# version independently use prefixed tags (<package>-v<version>) and a matching filter.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/zakadi
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart analyze --fatal-infos
+      - run: dart test
+      - run: dart pub publish --dry-run
+
+  github-release:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Release notes from the changelog section of this version
+        run: |
+          awk -v v="${GITHUB_REF_NAME#v}" '$0 ~ "^## \\[" v "\\]" {p=1; next} /^## \[/ {p=0} p' packages/zakadi/CHANGELOG.md > notes.md
+          test -s notes.md
+      - uses: softprops/action-gh-release@v3
+        with:
+          body_path: notes.md
+          draft: true
+      - run: echo "Publish by hand - cd packages/zakadi && dart pub publish" >> "$GITHUB_STEP_SUMMARY"

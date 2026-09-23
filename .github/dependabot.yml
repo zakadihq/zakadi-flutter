@@ -1,0 +1,19 @@
+# Zakadi repository standard: Dependabot. One pub package today; add an entry per
+# package as the federated plugin packages land.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pub
+    directory: /packages/zakadi
+    schedule:
+      interval: weekly
+    groups:
+      pub-minor-and-patch:
+        update-types: ["minor", "patch"]
