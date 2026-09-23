@@ -1,7 +1,9 @@
-# Zakadi repository standard: ci.yml for the Flutter repository. One pure Dart package
-# today, so the Dart SDK is enough; the integration job is the pub.dev dry run. When the
-# federated plugin packages land, the jobs take the Flutter SDK, a package matrix and
-# the example app's integration tests on an emulator (see the standard's ci-dart.yml).
+# Zakadi repository standard: ci.yml for the Flutter repository. The zakadi_sdk packages
+# and the example form a pub workspace; packages/zakadi keeps its own resolution (D76),
+# so it is resolved on its own before the tree-wide format and analysis. The commands are
+# the ones in lefthook.yml. The integration job runs the zakadi publish dry run, the
+# example's integration test on an Android emulator, and the example's iOS simulator
+# build on Flutter 3.44 and the latest stable, with Swift Package Manager and CocoaPods.
 name: ci
 
 on:
@@ -16,47 +18,129 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  run:
-    working-directory: packages/zakadi
-
 jobs:
   format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
       - run: dart pub get
+      - run: dart pub get -C packages/zakadi
       - run: dart format --output=none --set-exit-if-changed .
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
       - run: dart pub get
+      - run: dart pub get -C packages/zakadi
       - run: dart analyze --fatal-infos
+      - run: bash tool/pigeons.sh && git diff --exit-code
 
   unit:
+    name: unit (${{ matrix.package }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: zakadi
+            test: dart pub get && dart test
+          - package: zakadi_sdk
+            test: flutter test
+          - package: zakadi_sdk_platform_interface
+            test: flutter test
+          - package: zakadi_sdk_android
+            test: flutter test
+          - package: zakadi_sdk_ios
+            test: flutter test
     steps:
       - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
       - run: dart pub get
-      - run: dart test
+      - run: ${{ matrix.test }}
+        working-directory: packages/${{ matrix.package }}
 
   integration:
-    runs-on: ubuntu-latest
+    name: integration (${{ matrix.leg }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: zakadi publish dry run
+            kind: publish
+            os: ubuntu-latest
+            flutter: any
+          - leg: android emulator
+            kind: android
+            os: ubuntu-latest
+            flutter: any
+          - leg: ios 3.44 swiftpm
+            kind: ios
+            os: macos-latest
+            flutter: 3.44.x
+            spm: true
+          - leg: ios 3.44 cocoapods
+            kind: ios
+            os: macos-latest
+            flutter: 3.44.x
+            spm: false
+          - leg: ios stable swiftpm
+            kind: ios
+            os: macos-latest
+            flutter: any
+            spm: true
+          - leg: ios stable cocoapods
+            kind: ios
+            os: macos-latest
+            flutter: any
+            spm: false
     steps:
       - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - name: Enable KVM for the emulator
+        if: matrix.kind == 'android'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v6
+        if: matrix.kind == 'android'
         with:
-          sdk: stable
-      - run: dart pub get
-      - run: dart pub publish --dry-run
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter }}
+          cache: true
+      - name: Publish dry run of zakadi, in its own resolution
+        if: matrix.kind == 'publish'
+        working-directory: packages/zakadi
+        run: dart pub get && dart pub publish --dry-run
+      - name: Integration test of the example on an Android emulator
+        if: matrix.kind == 'android'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          script: cd packages/zakadi_sdk/example && flutter test integration_test
+      - name: Use CocoaPods instead of Swift Package Manager
+        if: matrix.kind == 'ios' && !matrix.spm
+        run: flutter config --no-enable-swift-package-manager
+      - name: Build the example for the iOS simulator
+        if: matrix.kind == 'ios'
+        working-directory: packages/zakadi_sdk/example
+        env:
+          LANG: en_US.UTF-8
+        run: flutter build ios --simulator --no-codesign

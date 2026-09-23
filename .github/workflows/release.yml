@@ -1,12 +1,18 @@
 # Zakadi repository standard: release.yml for pub.dev (published by hand, D61).
-# The tag verifies the package, runs the publish dry run and drafts the GitHub release
-# with the changelog section; a maintainer then runs "dart pub publish". Packages that
-# version independently use prefixed tags (<package>-v<version>) and a matching filter.
+# Each package versions on its own, so a release is the tag <package>-v<version>. The tag
+# verifies that package and runs its publish dry run. For zakadi it also drafts the
+# GitHub release with the changelog section, and a maintainer then runs
+# "dart pub publish"; the zakadi_sdk packages only dry-run.
 name: release
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "zakadi-v*"
+      - "zakadi_sdk-v*"
+      - "zakadi_sdk_platform_interface-v*"
+      - "zakadi_sdk_android-v*"
+      - "zakadi_sdk_ios-v*"
   workflow_dispatch:
 
 permissions:
@@ -15,21 +21,37 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/zakadi
+    outputs:
+      package: ${{ steps.tag.outputs.package }}
     steps:
       - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - id: tag
+        name: Package and version from the tag
+        run: |
+          package="${GITHUB_REF_NAME%-v*}"
+          version="${GITHUB_REF_NAME##*-v}"
+          if ! grep -qxF "version: $version" "packages/$package/pubspec.yaml"; then
+            echo "The tag $GITHUB_REF_NAME does not match packages/$package/pubspec.yaml" >&2
+            exit 1
+          fi
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+          if [ "$package" = zakadi ]; then echo "test=dart test" >> "$GITHUB_OUTPUT"; else echo "test=flutter test" >> "$GITHUB_OUTPUT"; fi
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
       - run: dart pub get
+        working-directory: packages/${{ steps.tag.outputs.package }}
       - run: dart analyze --fatal-infos
-      - run: dart test
+        working-directory: packages/${{ steps.tag.outputs.package }}
+      - run: ${{ steps.tag.outputs.test }}
+        working-directory: packages/${{ steps.tag.outputs.package }}
       - run: dart pub publish --dry-run
+        working-directory: packages/${{ steps.tag.outputs.package }}
 
   github-release:
     needs: verify
+    if: needs.verify.outputs.package == 'zakadi'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,7 +59,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Release notes from the changelog section of this version
         run: |
-          awk -v v="${GITHUB_REF_NAME#v}" '$0 ~ "^## \\[" v "\\]" {p=1; next} /^## \[/ {p=0} p' packages/zakadi/CHANGELOG.md > notes.md
+          awk -v v="${GITHUB_REF_NAME#zakadi-v}" '$0 ~ "^## \\[" v "\\]" {p=1; next} /^## \[/ {p=0} p' packages/zakadi/CHANGELOG.md > notes.md
           test -s notes.md
       - uses: softprops/action-gh-release@v3
         with:
