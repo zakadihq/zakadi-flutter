@@ -1,17 +1,7 @@
 # zakadi_sdk_example
 
-Demonstrates how to use the zakadi_sdk plugin.
+The example app of `zakadi_sdk` and the host of its integration tests (spec 08 8.8). It
+uses `FlutterFragmentActivity`, compiles against API 37 with `minSdk` 26, targets iOS 15
+and carries the camera and microphone usage strings.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Run the integration tests on a device or emulator with `flutter test integration_test`.

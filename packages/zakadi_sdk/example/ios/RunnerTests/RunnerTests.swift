@@ -1,29 +1,25 @@
 import Flutter
-import UIKit
 import XCTest
 
 // If your plugin has been explicitly set to "type: .dynamic" in the Package.swift,
 // you will need to add your plugin as a dependency of RunnerTests within Xcode.
 
-@testable import zakadi_sdk
+@testable import zakadi_sdk_ios
 
-// This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
+// Unit tests of the Swift stub of zakadi_sdk_ios.
 //
 // See https://developer.apple.com/documentation/xctest for more information about using XCTest.
 
 class RunnerTests: XCTestCase {
 
-  func testGetPlatformVersion() {
-    let plugin = ZakadiSdkPlugin()
+  func testInitializeReturns() throws {
+    try ZakadiSdkPlugin().initialize(isolateEpoch: "epoch")
+  }
 
-    let call = FlutterMethodCall(methodName: "getPlatformVersion", arguments: [])
-
-    let resultExpectation = expectation(description: "result block must be called.")
-    plugin.handle(call) { result in
-      XCTAssertEqual(result as! String, "iOS " + UIDevice.current.systemVersion)
-      resultExpectation.fulfill()
+  func testDisposeThrowsInternal() {
+    XCTAssertThrowsError(try ZakadiSdkPlugin().dispose(handle: "handle")) { error in
+      XCTAssertEqual((error as? ZakadiPigeonError)?.code, "internal")
     }
-    waitForExpectations(timeout: 1)
   }
 
 }
