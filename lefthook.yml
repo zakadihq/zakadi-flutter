@@ -1,7 +1,8 @@
 # Zakadi repository standard: git hooks (lefthook 2.x) for the Flutter repository.
 # The commands are the ones .github/workflows/ci.yml runs. Install: brew install lefthook,
-# then lefthook install. One pure Dart package today (packages/zakadi); the federated
-# plugin packages join the same jobs when they exist.
+# then lefthook install. The zakadi_sdk packages and the example form a pub workspace;
+# packages/zakadi keeps its own resolution (D76), so the format job resolves both before
+# the checks, which run in order.
 
 pre-commit:
   jobs:
@@ -12,14 +13,17 @@ pre-commit:
       run: 'echo "secrets: {staged_files} must not be committed (spec 00 0.11)" >&2; exit 1'
     - name: checks
       group:
-        parallel: true
         jobs:
           - name: format
             glob: "*.dart"
-            run: dart format --output=none --set-exit-if-changed {staged_files}
+            run: dart pub get && dart pub get -C packages/zakadi && dart format --output=none --set-exit-if-changed {staged_files}
           - name: lint
             glob: "*.dart"
-            run: dart pub get -C packages/zakadi && dart analyze --fatal-infos packages/zakadi
+            run: dart analyze --fatal-infos
+          - name: pigeons
+            glob: "packages/zakadi_sdk_{android,ios}/**"
+            # Only the generated files: unstaged edits elsewhere are not this check's business.
+            run: bash tool/pigeons.sh && git diff --exit-code -- '*.g.dart' '*.g.kt' '*.g.swift'
 
 commit-msg:
   # git writes the message on merge and rebase.
@@ -43,4 +47,8 @@ commit-msg:
 pre-push:
   jobs:
     - name: unit
-      run: cd packages/zakadi && dart test
+      run: |
+        (cd packages/zakadi && dart pub get && dart test) || exit 1
+        for p in zakadi_sdk zakadi_sdk_platform_interface zakadi_sdk_android zakadi_sdk_ios; do
+          (cd "packages/$p" && flutter test) || exit 1
+        done

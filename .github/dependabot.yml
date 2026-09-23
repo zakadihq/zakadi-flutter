@@ -1,5 +1,5 @@
-# Zakadi repository standard: Dependabot. One pub package today; add an entry per
-# package as the federated plugin packages land.
+# Zakadi repository standard: Dependabot. One pub entry per package, the Android
+# plugin's Gradle build, and the workflow actions.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -16,4 +16,44 @@ updates:
       interval: weekly
     groups:
       pub-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: pub
+    directory: /packages/zakadi_sdk
+    schedule:
+      interval: weekly
+    groups:
+      pub-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: pub
+    directory: /packages/zakadi_sdk_platform_interface
+    schedule:
+      interval: weekly
+    groups:
+      pub-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: pub
+    directory: /packages/zakadi_sdk_android
+    schedule:
+      interval: weekly
+    groups:
+      pub-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: pub
+    directory: /packages/zakadi_sdk_ios
+    schedule:
+      interval: weekly
+    groups:
+      pub-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    directory: /packages/zakadi_sdk_android/android
+    schedule:
+      interval: weekly
+    groups:
+      gradle-minor-and-patch:
         update-types: ["minor", "patch"]
