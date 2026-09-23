@@ -1,28 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zakadi_sdk_ios/zakadi_sdk_ios.dart';
-import 'package:zakadi_sdk_ios/zakadi_sdk_ios_platform_interface.dart';
-import 'package:zakadi_sdk_ios/zakadi_sdk_ios_method_channel.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:zakadi_sdk_platform_interface/zakadi_sdk_platform_interface.dart';
 
-class MockZakadiSdkIosPlatform
-    with MockPlatformInterfaceMixin
-    implements ZakadiSdkIosPlatform {
+import 'test_api.g.dart';
+
+class _FakeHostApi extends Fake implements TestZakadiHostApi {
+  final List<String> epochs = <String>[];
+
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
+  void initialize(String isolateEpoch) => epochs.add(isolateEpoch);
 }
 
 void main() {
-  final ZakadiSdkIosPlatform initialPlatform = ZakadiSdkIosPlatform.instance;
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('$MethodChannelZakadiSdkIos is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelZakadiSdkIos>());
+  test('registerWith installs ZakadiSdkIos as the platform instance', () {
+    ZakadiSdkIos.registerWith();
+    expect(ZakadiSdkPlatform.instance, isA<ZakadiSdkIos>());
   });
 
-  test('getPlatformVersion', () async {
-    ZakadiSdkIos zakadiSdkIosPlugin = ZakadiSdkIos();
-    MockZakadiSdkIosPlatform fakePlatform = MockZakadiSdkIosPlatform();
-    ZakadiSdkIosPlatform.instance = fakePlatform;
+  test('initialize reaches the host API', () async {
+    final host = _FakeHostApi();
+    TestZakadiHostApi.setUp(host);
+    addTearDown(() => TestZakadiHostApi.setUp(null));
 
-    expect(await zakadiSdkIosPlugin.getPlatformVersion(), '42');
+    await ZakadiSdkIos().initialize('epoch-1');
+
+    expect(host.epochs, <String>['epoch-1']);
   });
 }

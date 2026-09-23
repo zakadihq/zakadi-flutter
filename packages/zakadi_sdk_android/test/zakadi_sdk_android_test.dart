@@ -1,29 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zakadi_sdk_android/zakadi_sdk_android.dart';
-import 'package:zakadi_sdk_android/zakadi_sdk_android_platform_interface.dart';
-import 'package:zakadi_sdk_android/zakadi_sdk_android_method_channel.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:zakadi_sdk_platform_interface/zakadi_sdk_platform_interface.dart';
 
-class MockZakadiSdkAndroidPlatform
-    with MockPlatformInterfaceMixin
-    implements ZakadiSdkAndroidPlatform {
+import 'test_api.g.dart';
+
+class _FakeHostApi extends Fake implements TestZakadiHostApi {
+  final List<String> epochs = <String>[];
+
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
+  void initialize(String isolateEpoch) => epochs.add(isolateEpoch);
 }
 
 void main() {
-  final ZakadiSdkAndroidPlatform initialPlatform =
-      ZakadiSdkAndroidPlatform.instance;
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('$MethodChannelZakadiSdkAndroid is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelZakadiSdkAndroid>());
+  test('registerWith installs ZakadiSdkAndroid as the platform instance', () {
+    ZakadiSdkAndroid.registerWith();
+    expect(ZakadiSdkPlatform.instance, isA<ZakadiSdkAndroid>());
   });
 
-  test('getPlatformVersion', () async {
-    ZakadiSdkAndroid zakadiSdkAndroidPlugin = ZakadiSdkAndroid();
-    MockZakadiSdkAndroidPlatform fakePlatform = MockZakadiSdkAndroidPlatform();
-    ZakadiSdkAndroidPlatform.instance = fakePlatform;
+  test('initialize reaches the host API', () async {
+    final host = _FakeHostApi();
+    TestZakadiHostApi.setUp(host);
+    addTearDown(() => TestZakadiHostApi.setUp(null));
 
-    expect(await zakadiSdkAndroidPlugin.getPlatformVersion(), '42');
+    await ZakadiSdkAndroid().initialize('epoch-1');
+
+    expect(host.epochs, <String>['epoch-1']);
   });
 }
