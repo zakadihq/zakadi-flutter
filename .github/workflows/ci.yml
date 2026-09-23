@@ -138,9 +138,20 @@ jobs:
       - name: Use CocoaPods instead of Swift Package Manager
         if: matrix.kind == 'ios' && !matrix.spm
         run: flutter config --no-enable-swift-package-manager
-      - name: Build the example for the iOS simulator
-        if: matrix.kind == 'ios'
+      - name: Build the example for the iOS simulator with Swift Package Manager
+        if: matrix.kind == 'ios' && matrix.spm
         working-directory: packages/zakadi_sdk/example
         env:
           LANG: en_US.UTF-8
+        run: flutter build ios --simulator --no-codesign
+      - name: Build the example for the iOS simulator with CocoaPods
+        if: matrix.kind == 'ios' && !matrix.spm
+        working-directory: packages/zakadi_sdk/example
+        env:
+          LANG: en_US.UTF-8
+          # Xcode 27 builds for iOS 15.0 and later only, and the Flutter pod that
+          # Flutter 3.44 generates declares iOS 13.0. flutter hands FLUTTER_XCODE_* to
+          # xcodebuild as build settings, so every target, the pods included, builds for
+          # 15.0, the plugin's own floor (spec 08 8.1).
+          FLUTTER_XCODE_IPHONEOS_DEPLOYMENT_TARGET: "15.0"
         run: flutter build ios --simulator --no-codesign
