@@ -1,5 +1,7 @@
-# Zakadi repository standard: Dependabot. One pub entry per package, the Android
-# plugin's Gradle build, and the workflow actions.
+# Zakadi repository standard: Dependabot. One pub entry for the zakadi_sdk workspace at
+# the root, since Dependabot's pub updater applies to a workspace only from its root, one
+# for packages/zakadi in its own resolution (D76), the Android plugin's Gradle build, and
+# the workflow actions.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -11,39 +13,15 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      pub-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: pub
     directory: /packages/zakadi
-    schedule:
-      interval: weekly
-    groups:
-      pub-minor-and-patch:
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: pub
-    directory: /packages/zakadi_sdk
-    schedule:
-      interval: weekly
-    groups:
-      pub-minor-and-patch:
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: pub
-    directory: /packages/zakadi_sdk_platform_interface
-    schedule:
-      interval: weekly
-    groups:
-      pub-minor-and-patch:
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: pub
-    directory: /packages/zakadi_sdk_android
-    schedule:
-      interval: weekly
-    groups:
-      pub-minor-and-patch:
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: pub
-    directory: /packages/zakadi_sdk_ios
     schedule:
       interval: weekly
     groups:
