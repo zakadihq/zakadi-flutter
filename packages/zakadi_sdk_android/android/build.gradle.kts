@@ -1,4 +1,4 @@
-group = "dev.zakadi.zakadi_sdk_android"
+group = "dev.zakadi.flutter"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -26,9 +26,9 @@ plugins {
 }
 
 android {
-    namespace = "dev.zakadi.zakadi_sdk_android"
+    namespace = "dev.zakadi.flutter"
 
-    compileSdk = 36
+    compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -45,7 +45,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 26
     }
 
     testOptions {
@@ -72,6 +72,6 @@ kotlin {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.mockito:mockito-core:5.0.0")
 }
