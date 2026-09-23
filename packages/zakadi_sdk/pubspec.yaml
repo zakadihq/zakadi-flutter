@@ -1,21 +1,26 @@
 name: zakadi_sdk
 description: "Zakadi active face liveness for Flutter: a thin wrapper over the native Zakadi SDKs that runs the check as a short automated video call."
-version: 0.0.1
-homepage:
+version: 0.0.0
+repository: https://github.com/zakadihq/zakadi-flutter/tree/main/packages/zakadi_sdk
+issue_tracker: https://github.com/zakadihq/zakadi-flutter/issues
 
 environment:
-  sdk: ^3.12.2
-  flutter: '>=3.3.0'
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+resolution: workspace
 
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
-
+  zakadi_sdk_android: ^0.0.0
+  zakadi_sdk_ios: ^0.0.0
+  zakadi_sdk_platform_interface: ^0.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  plugin_platform_interface: ^2.1.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -35,10 +40,9 @@ flutter:
   plugin:
     platforms:
       android:
-        package: dev.zakadi.zakadi_sdk
-        pluginClass: ZakadiSdkPlugin
+        default_package: zakadi_sdk_android
       ios:
-        pluginClass: ZakadiSdkPlugin
+        default_package: zakadi_sdk_ios
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

@@ -1,0 +1,15 @@
+# Pub workspace root (https://dart.dev/tools/pub/workspaces) of the zakadi_sdk plugin:
+# one resolution for the packages below, no dependencies of its own. packages/zakadi is
+# not a member; it keeps its own resolution (D76).
+name: _
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+workspace:
+  - packages/zakadi_sdk
+  - packages/zakadi_sdk/example
+  - packages/zakadi_sdk_platform_interface
+  - packages/zakadi_sdk_android
+  - packages/zakadi_sdk_ios
