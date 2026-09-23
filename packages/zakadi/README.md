@@ -6,4 +6,4 @@ This package holds the values that every Zakadi client and server agree on: sess
 
 Status: pre-release. The API and this package's contents track the Zakadi protocol specification; nothing here is stable before 1.0.
 
-Links: https://zakadi.dev (documentation), https://github.com/mosesgameli/zakadi-flutter (source).
+Links: https://zakadi.dev (documentation), https://github.com/zakadihq/zakadi-flutter (source).

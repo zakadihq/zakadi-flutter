@@ -2,8 +2,8 @@ name: zakadi
 description: Shared protocol types and constants for the Zakadi face-liveness SDKs (session states, error codes, terminal states, cue identifiers, close codes).
 version: 0.0.1
 homepage: https://zakadi.dev
-repository: https://github.com/mosesgameli/zakadi-flutter
-issue_tracker: https://github.com/mosesgameli/zakadi-flutter/issues
+repository: https://github.com/zakadihq/zakadi-flutter
+issue_tracker: https://github.com/zakadihq/zakadi-flutter/issues
 topics:
   - liveness
   - biometrics
