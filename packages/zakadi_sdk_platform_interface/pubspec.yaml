@@ -1,15 +1,19 @@
 name: zakadi_sdk_platform_interface
 description: "Common platform interface for zakadi_sdk, the Flutter plugin that wraps the native Zakadi face-liveness SDKs."
-version: 0.0.1
-homepage:
+version: 0.0.0
+repository: https://github.com/zakadihq/zakadi-flutter/tree/main/packages/zakadi_sdk_platform_interface
+issue_tracker: https://github.com/zakadihq/zakadi-flutter/issues
 
 environment:
-  sdk: ^3.12.2
-  flutter: ">=1.17.0"
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+resolution: workspace
 
 dependencies:
   flutter:
     sdk: flutter
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:

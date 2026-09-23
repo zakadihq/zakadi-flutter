@@ -5,7 +5,9 @@ description: "Demonstrates how to use the zakadi_sdk plugin."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.12.0
+
+resolution: workspace
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -41,6 +43,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  zakadi_sdk_platform_interface: ^0.0.0
+  zakadi_sdk_android: ^0.0.0
+  zakadi_sdk_ios: ^0.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
